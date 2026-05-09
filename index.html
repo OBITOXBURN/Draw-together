@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎨 DrawTogether — Collab Canvas</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf6ff;
+    --card: #ffffff;
+    --accent1: #ff6eb4;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #fbbf24;
+    --text: #2d1b69;
+    --muted: #9ca3af;
+    --shadow: 0 8px 32px rgba(167,139,250,0.18);
+    --radius: 20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 15% 20%, #ffe0f7 0%, transparent 40%),
+      radial-gradient(circle at 85% 80%, #e0e7ff 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, #f0fdf4 0%, transparent 60%);
+  }
+
+  /* ====== LOBBY ====== */
+  #lobby {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .lobby-card {
+    background: white;
+    border-radius: 32px;
+    padding: 48px 40px;
+    box-shadow: var(--shadow), 0 2px 0 #e9d5ff;
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+    border: 2px solid #f3e8ff;
+  }
+
+  .logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.8rem;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 4px;
+  }
+
+  .tagline {
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 36px;
+    letter-spacing: 0.02em;
+  }
+
+  .emoji-row {
+    font-size: 2rem;
+    margin-bottom: 12px;
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .section-label {
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 10px;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e9d5ff;
+    border-radius: 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fdf6ff;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 4px rgba(167,139,250,0.15);
+  }
+
+  input[type="text"]::placeholder { color: #c4b5fd; font-weight: 600; }
+
+  .avatar-pick {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  .avatar-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, border-color 0.15s;
+    background: #f3f4f6;
+  }
+
+  .avatar-btn:hover { transform: scale(1.15); }
+  .avatar-btn.selected { border-color: var(--accent2); background: #f3e8ff; transform: scale(1.1); }
+
+  .color-pick {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .user-color-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .user-color-btn:hover { transform: scale(1.2); }
+  .user-color-btn.selected { border-color: var(--text); box-shadow: 0 0 0 2px white inset; transform: scale(1.15); }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e9d5ff;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 16px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.02em;
+  }
+
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(0); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    color: white;
+    box-shadow: 0 4px 16px rgba(255,110,180,0.3);
+    margin-bottom: 12px;
+  }
+
+  .btn-secondary {
+    background: linear-gradient(135deg, var(--accent3), #06b6d4);
+    color: white;
+    box-shadow: 0 4px 16px rgba(52,211,153,0.3);
+  }
+
+  .room-code-display {
+    background: linear-gradient(135deg, #f3e8ff, #ede9fe);
+    border-radius: 14px;
+    padding: 16px;
+    margin: 16px 0;
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    letter-spacing: 0.2em;
+    color: var(--accent2);
+    border: 2px dashed #c4b5fd;
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+  }
+
+  .room-code-display:hover { background: linear-gradient(135deg, #ede9fe, #ddd6fe); }
+  .copy-hint { font-family: 'Nunito', sans-serif; font-size: 0.75rem; color: var(--muted); font-weight: 600; margin-top: 4px; }
+
+  /* ====== APP ====== */
+  #app { display: none; flex-direction: column; height: 100vh; overflow: hidden; }
+
+  /* Top bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: white;
+    border-bottom: 2px solid #f3e8ff;
+    box-shadow: 0 2px 12px rgba(167,139,250,0.1);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .topbar-logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .room-badge {
+    background: #f3e8ff;
+    color: var(--accent2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    border: 1.5px solid #e9d5ff;
+    transition: background 0.15s;
+  }
+
+  .room-badge:hover { background: #ede9fe; }
+
+  .users-bar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    border: 2px solid transparent;
+    transition: transform 0.15s;
+  }
+
+  .user-pill .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Main area */
+  .main-area {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    width: 80px;
+    background: white;
+    border-right: 2px solid #f3e8ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px;
+    gap: 8px;
+    overflow-y: auto;
+    flex-shrink: 0;
+    box-shadow: 2px 0 12px rgba(167,139,250,0.08);
+  }
+
+  .tool-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .tool-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .tool-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    border: 2.5px solid transparent;
+    background: #f9fafb;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .tool-btn:hover { background: #f3e8ff; transform: scale(1.08); }
+  .tool-btn.active { border-color: var(--accent2); background: #ede9fe; box-shadow: 0 0 0 3px rgba(167,139,250,0.2); }
+
+  .tool-divider {
+    width: 40px;
+    height: 1.5px;
+    background: #f3e8ff;
+    border-radius: 2px;
+    margin: 4px 0;
+  }
+
+  /* Color palette */
+  .palette {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    width: 100%;
+    padding: 0 2px;
+  }
+
+  .color-swatch {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    border: 2.5px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .color-swatch:hover { transform: scale(1.15); }
+  .color-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px white inset, 0 2px 8px rgba(0,0,0,0.15); transform: scale(1.1); }
+
+  /* Custom color */
+  .custom-color-wrap {
+    position: relative;
+    width: 52px;
+    height: 36px;
+  }
+
+  .custom-color-wrap input[type="color"] {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 2px;
+    background: none;
+  }
+
+  /* Brush size */
+  .size-slider {
+    width: 52px;
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--accent2), var(--accent1));
+    outline: none;
+    cursor: pointer;
+  }
+
+  .size-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--accent2);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  .size-preview {
+    width: 52px;
+    height: 36px;
+    background: #f9fafb;
+    border-radius: 10px;
+    border: 2px solid #f3e8ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .size-dot {
+    border-radius: 50%;
+    background: var(--text);
+    transition: width 0.1s, height 0.1s;
+  }
+
+  /* Opacity */
+  .opacity-slider {
+    width: 52px;
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, transparent, var(--accent1));
+    outline: none;
+    cursor: pointer;
+  }
+
+  .opacity-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--accent1);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  /* Canvas area */
+  .canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #fafafa;
+    background-image:
+      linear-gradient(rgba(167,139,250,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(167,139,250,0.06) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+
+  #mainCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    touch-action: none;
+    cursor: crosshair;
+  }
+
+  #overlayCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    touch-action: none;
+    pointer-events: none;
+  }
+
+  /* Remote cursors */
+  .remote-cursor {
+    position: absolute;
+    pointer-events: none;
+    transition: left 0.05s, top 0.05s;
+    z-index: 10;
+  }
+
+  .cursor-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transform: translate(-50%, -50%);
+  }
+
+  .cursor-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+    margin-top: 2px;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  /* Bottom toolbar */
+  .bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: white;
+    border-top: 2px solid #f3e8ff;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .action-btn:hover { transform: translateY(-2px); }
+  .action-btn:active { transform: translateY(0); }
+
+  .btn-undo { background: #f3e8ff; color: var(--accent2); }
+  .btn-redo { background: #fef3c7; color: #d97706; }
+  .btn-clear { background: #fee2e2; color: #ef4444; }
+  .btn-save { background: linear-gradient(135deg, var(--accent3), #06b6d4); color: white; box-shadow: 0 3px 12px rgba(52,211,153,0.3); }
+  .btn-bg { background: #f0fdf4; color: #059669; }
+
+  /* Notifications */
+  .notif {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 100;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .notif.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(45,27,105,0.3);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+  }
+
+  .modal {
+    background: white;
+    border-radius: 24px;
+    padding: 32px 28px;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: var(--shadow);
+    text-align: center;
+    border: 2px solid #f3e8ff;
+  }
+
+  .modal h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: var(--accent2);
+    margin-bottom: 8px;
+  }
+
+  .modal p { color: var(--muted); font-weight: 600; font-size: 0.9rem; margin-bottom: 20px; }
+
+  .modal-code {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.5rem;
+    letter-spacing: 0.25em;
+    color: var(--accent2);
+    background: #f3e8ff;
+    border-radius: 14px;
+    padding: 14px;
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: background 0.2s;
+  }
+
+  .modal-code:hover { background: #ede9fe; }
+  .modal-close { background: #f3e8ff; color: var(--accent2); border: none; border-radius: 12px; padding: 10px 24px; font-family: 'Fredoka One', cursive; font-size: 1rem; cursor: pointer; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #e9d5ff; border-radius: 2px; }
+
+  @media (max-width: 600px) {
+    .toolbar { width: 60px; padding: 8px 4px; }
+    .tool-btn { width: 44px; height: 44px; font-size: 1.2rem; border-radius: 10px; }
+    .palette { gap: 4px; }
+    .size-slider, .opacity-slider { width: 44px; }
+    .size-preview { width: 44px; }
+    .custom-color-wrap { width: 44px; }
+    .topbar-logo { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOBBY -->
+<div id="lobby">
+  <div class="lobby-card">
+    <div class="emoji-row">🎨✨🖌️</div>
+    <div class="logo">DrawTogether</div>
+    <div class="tagline">Real-time collaborative drawing • Up to 4 friends</div>
+
+    <div class="section-label">Your Name</div>
+    <div class="input-group">
+      <input type="text" id="nameInput" placeholder="Enter your name..." maxlength="20">
+    </div>
+
+    <div class="section-label">Pick Avatar</div>
+    <div class="avatar-pick" id="avatarPick">
+      <button class="avatar-btn selected" data-emoji="🐱">🐱</button>
+      <button class="avatar-btn" data-emoji="🐶">🐶</button>
+      <button class="avatar-btn" data-emoji="🦊">🦊</button>
+      <button class="avatar-btn" data-emoji="🐸">🐸</button>
+      <button class="avatar-btn" data-emoji="🐼">🐼</button>
+      <button class="avatar-btn" data-emoji="🦄">🦄</button>
+      <button class="avatar-btn" data-emoji="🐧">🐧</button>
+      <button class="avatar-btn" data-emoji="🐯">🐯</button>
+    </div>
+
+    <div class="section-label" style="margin-top:14px">Your Color</div>
+    <div class="color-pick" id="userColorPick">
+      <button class="user-color-btn selected" data-color="#ff6eb4" style="background:#ff6eb4"></button>
+      <button class="user-color-btn" data-color="#a78bfa" style="background:#a78bfa"></button>
+      <button class="user-color-btn" data-color="#34d399" style="background:#34d399"></button>
+      <button class="user-color-btn" data-color="#fbbf24" style="background:#fbbf24"></button>
+      <button class="user-color-btn" data-color="#60a5fa" style="background:#60a5fa"></button>
+      <button class="user-color-btn" data-color="#f87171" style="background:#f87171"></button>
+      <button class="user-color-btn" data-color="#fb923c" style="background:#fb923c"></button>
+      <button class="user-color-btn" data-color="#2d1b69" style="background:#2d1b69"></button>
+    </div>
+
+    <button class="btn btn-primary" onclick="createRoom()">🎉 Create New Room</button>
+
+    <div class="divider">or join existing</div>
+
+    <div class="input-group">
+      <input type="text" id="roomCodeInput" placeholder="Enter Room Code..." maxlength="6" style="text-transform:uppercase;text-align:center;letter-spacing:0.2em;font-size:1.1rem">
+    </div>
+    <button class="btn btn-secondary" onclick="joinRoom()">🚀 Join Room</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- Top bar -->
+  <div class="topbar">
+    <span class="topbar-logo">🎨 DrawTogether</span>
+    <span class="room-badge" id="topRoomCode" onclick="showRoomModal()" title="Click to share">📋 ------</span>
+    <span style="color:var(--muted);font-size:0.8rem;font-weight:700" id="connectionStatus">Connecting...</span>
+    <div class="users-bar" id="usersBar"></div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-area">
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="tool-label">Tools</div>
+      <div class="tool-section">
+        <button class="tool-btn active" id="toolBrush" onclick="setTool('brush')" title="Brush">🖌️</button>
+        <button class="tool-btn" id="toolPencil" onclick="setTool('pencil')" title="Pencil">✏️</button>
+        <button class="tool-btn" id="toolMarker" onclick="setTool('marker')" title="Marker">🖊️</button>
+        <button class="tool-btn" id="toolEraser" onclick="setTool('eraser')" title="Eraser">🧹</button>
+        <button class="tool-btn" id="toolFill" onclick="setTool('fill')" title="Fill">🪣</button>
+        <button class="tool-btn" id="toolLine" onclick="setTool('line')" title="Line">📏</button>
+        <button class="tool-btn" id="toolRect" onclick="setTool('rect')" title="Rectangle">▭</button>
+        <button class="tool-btn" id="toolCircle" onclick="setTool('circle')" title="Circle">⭕</button>
+        <button class="tool-btn" id="toolSpray" onclick="setTool('spray')" title="Spray">🫧</button>
+        <button class="tool-btn" id="toolStar" onclick="setTool('star')" title="Star Stamp">⭐</button>
+        <button class="tool-btn" id="toolHeart" onclick="setTool('heart')" title="Heart Stamp">❤️</button>
+      </div>
+
+      <div class="tool-divider"></div>
+      <div class="tool-label">Size</div>
+      <div class="size-preview"><div class="size-dot" id="sizeDot" style="width:8px;height:8px;"></div></div>
+      <input type="range" class="size-slider" id="sizeSlider" min="1" max="60" value="8" oninput="updateSize(this.value)">
+
+      <div class="tool-divider"></div>
+      <div class="tool-label">Opacity</div>
+      <input type="range" class="opacity-slider" id="opacitySlider" min="10" max="100" value="100" oninput="updateOpacity(this.value)">
+
+      <div class="tool-divider"></div>
+      <div class="tool-label">Colors</div>
+      <div class="palette" id="palette"></div>
+
+      <div class="tool-divider"></div>
+      <div class="tool-label">Custom</div>
+      <div class="custom-color-wrap">
+        <input type="color" id="customColor" value="#ff6eb4" oninput="pickCustomColor(this.
